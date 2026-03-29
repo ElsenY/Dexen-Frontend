@@ -2,7 +2,32 @@
 
 React application for user WFH management and activity tracking.
 
-## 🚀 Routes Overview
+## 🚀 Getting Started
+
+Follow these steps to get the application running on your local machine:
+
+1.  **Install Dependencies**
+    Ensure you have [Node.js](https://nodejs.org/) installed, then run:
+    ```bash
+    npm install
+    ```
+
+2.  **Configure Environment Variables**
+    Create a `.env` file in the root directory and add your backend API URL:
+    ```env
+    REACT_APP_API_URL=http://localhost:3000
+    ```
+
+3.  **Launch the Application**
+    Start the development server:
+    ```bash
+    npm start
+    ```
+    The app will be available at [http://localhost:3000](http://localhost:3000).
+
+---
+
+## 🏗️ Routes Overview
 
 ### 🔐 1. Login Page (`/login`)
 The entry point for authenticated sessions.
