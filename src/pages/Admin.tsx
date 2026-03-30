@@ -1,6 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Mail, Pencil, Save, Phone, Hash, KeyRound, Users, ArrowLeft, Bell, X, Info, UserPlus, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Camera,
+  Mail,
+  Pencil,
+  Save,
+  Phone,
+  Hash,
+  KeyRound,
+  Users,
+  ArrowLeft,
+  Bell,
+  X,
+  Info,
+  UserPlus,
+  CheckCircle,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 
 interface UserData {
@@ -16,7 +31,7 @@ interface UpdateNotification {
   newData: any;
 }
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3000';
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:5000";
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
@@ -28,22 +43,23 @@ const Admin: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const [activeNotification, setActiveNotification] = useState<UpdateNotification | null>(null);
+  const [activeNotification, setActiveNotification] =
+    useState<UpdateNotification | null>(null);
 
   const [editForm, setEditForm] = useState({
-    phone_number: '',
-    image: '',
-    current_password: '',
-    new_password: ''
+    phone_number: "",
+    image: "",
+    current_password: "",
+    new_password: "",
   });
 
   const [regForm, setRegForm] = useState({
-    email: '',
-    password: '',
-    phone_number: '',
-    image: ''
+    email: "",
+    password: "",
+    phone_number: "",
+    image: "",
   });
   const [regFile, setRegFile] = useState<File | null>(null);
 
@@ -53,13 +69,13 @@ const Admin: React.FC = () => {
       const response = await fetch(`${API_URL}/users`);
 
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        throw new Error("Failed to fetch users");
       }
 
       const data = await response.json();
       setUsers(data);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Error fetching users');
+      setErrorMsg(err.message || "Error fetching users");
     } finally {
       setIsLoading(false);
     }
@@ -72,16 +88,18 @@ const Admin: React.FC = () => {
       setActiveNotification(data);
       fetchUsers();
     });
-    return () => { socket.disconnect(); };
+    return () => {
+      socket.disconnect();
+    };
   }, [navigate]);
 
   const handleEditClick = (user: UserData) => {
     setSelectedUser(user);
     setEditForm({
-      phone_number: user.phone_number || '',
-      image: user.image || '',
-      current_password: '',
-      new_password: ''
+      phone_number: user.phone_number || "",
+      image: user.image || "",
+      current_password: "",
+      new_password: "",
     });
     setIsEditing(true);
   };
@@ -90,7 +108,7 @@ const Admin: React.FC = () => {
     setIsEditing(false);
     setIsRegistering(false);
     setSelectedUser(null);
-    setErrorMsg('');
+    setErrorMsg("");
     setRegFile(null);
   };
 
@@ -102,15 +120,18 @@ const Admin: React.FC = () => {
     setRegForm({ ...regForm, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, target: 'edit' | 'reg') => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    target: "edit" | "reg",
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (target === 'reg') setRegFile(file);
+      if (target === "reg") setRegFile(file);
       const reader = new FileReader();
       reader.onload = (event) => {
         const base64 = event.target?.result as string;
-        const rawBase64 = base64.split(',')[1] || base64;
-        if (target === 'edit') setEditForm({ ...editForm, image: rawBase64 });
+        const rawBase64 = base64.split(",")[1] || base64;
+        if (target === "edit") setEditForm({ ...editForm, image: rawBase64 });
         else setRegForm({ ...regForm, image: rawBase64 });
       };
       reader.readAsDataURL(file);
@@ -121,11 +142,12 @@ const Admin: React.FC = () => {
     e.preventDefault();
     if (!selectedUser) return;
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
 
     try {
       const payload: any = {};
-      if (editForm.phone_number !== selectedUser.phone_number) payload.phone_number = editForm.phone_number;
+      if (editForm.phone_number !== selectedUser.phone_number)
+        payload.phone_number = editForm.phone_number;
       if (editForm.image !== selectedUser.image) payload.image = editForm.image;
       if (editForm.new_password) {
         payload.new_password = editForm.new_password;
@@ -138,15 +160,18 @@ const Admin: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/users/${selectedUser.id}/profile`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `${API_URL}/users/${selectedUser.id}/profile`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload)
-      });
+      );
 
-      if (!response.ok) throw new Error('Failed to update user');
+      if (!response.ok) throw new Error("Failed to update user");
       fetchUsers();
       setIsEditing(false);
       setSelectedUser(null);
@@ -160,24 +185,36 @@ const Admin: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
 
     try {
       const formData = new FormData();
-      formData.append('email', regForm.email);
-      formData.append('password', regForm.password);
-      if (regForm.phone_number) formData.append('phone_number', regForm.phone_number);
-      if (regFile) formData.append('image', regFile);
+      formData.append("email", regForm.email);
+      formData.append("password", regForm.password);
+      if (regForm.phone_number)
+        formData.append("phone_number", regForm.phone_number);
+      if (regFile) formData.append("image", regFile);
 
       const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        body: formData
+        method: "POST",
+        body: formData,
       });
 
-      if (!response.ok) throw new Error('Registration failed.');
+      if (!response.ok) {
+        // Attempt to read { message } from the response body.
+        let message = "Registration failed";
+        try {
+          const data = await response.json();
+          if (data && data.message) message = data.message;
+        } catch (e) {
+          // If parsing JSON fails, use default message.
+        }
+        throw new Error(message);
+      }
+
       await fetchUsers();
       setIsRegistering(false);
-      setRegForm({ email: '', password: '', phone_number: '', image: '' });
+      setRegForm({ email: "", password: "", phone_number: "", image: "" });
       setRegFile(null);
     } catch (err: any) {
       setErrorMsg(err.message);
@@ -199,25 +236,42 @@ const Admin: React.FC = () => {
               <Users size={32} className="text-[#6366f1]" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">Access Control</h1>
-              <p className="text-slate-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] sm:max-w-none">Global User Management & Monitoring</p>
+              <h1 className="text-3xl font-bold text-white tracking-tight">
+                Access Control
+              </h1>
+              <p className="text-slate-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] sm:max-w-none">
+                Global User Management & Monitoring
+              </p>
             </div>
           </div>
 
-          {(isEditing || isRegistering) ? (
+          {isEditing || isRegistering ? (
             <div className="p-8 md:p-12 animate-fade-up">
-              <button onClick={handleBack} className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors mb-10 group">
-                <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-                <span className="font-semibold uppercase tracking-widest text-xs">Return to User Pool</span>
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors mb-10 group"
+              >
+                <ArrowLeft
+                  size={18}
+                  className="transition-transform group-hover:-translate-x-1"
+                />
+                <span className="font-semibold uppercase tracking-widest text-xs">
+                  Return to User Pool
+                </span>
               </button>
 
               <div className="flex flex-col md:flex-row gap-12 items-start">
                 <div className="relative group mx-auto md:mx-0">
                   <div className="w-40 h-40 rounded-[40px] overflow-hidden border-4 border-[#0f172a] shadow-2xl bg-slate-800">
                     <img
-                      src={isEditing
-                        ? (editForm.image ? `data:image/png;base64,${editForm.image}` : "")
-                        : (regForm.image ? `data:image/png;base64,${regForm.image}` : "")
+                      src={
+                        isEditing
+                          ? editForm.image
+                            ? `data:image/png;base64,${editForm.image}`
+                            : ""
+                          : regForm.image
+                            ? `data:image/png;base64,${regForm.image}`
+                            : ""
                       }
                       alt="Avatar"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -225,70 +279,141 @@ const Admin: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => isEditing ? fileInputRef.current?.click() : regFileInputRef.current?.click()}
+                    onClick={() =>
+                      isEditing
+                        ? fileInputRef.current?.click()
+                        : regFileInputRef.current?.click()
+                    }
                     className="absolute bottom-2 right-2 p-3 bg-[#6366f1] text-white rounded-2xl shadow-lg hover:scale-110 active:scale-95 transition-all"
                   >
                     <Camera size={18} />
                   </button>
-                  <input type="file" ref={isEditing ? fileInputRef : regFileInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, isEditing ? 'edit' : 'reg')} />
+                  <input
+                    type="file"
+                    ref={isEditing ? fileInputRef : regFileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) =>
+                      handleFileChange(e, isEditing ? "edit" : "reg")
+                    }
+                  />
                 </div>
 
                 <div className="flex-1 w-full space-y-10">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">{isEditing ? 'Modify Personnel' : 'Enroll New Personnel'}</h2>
-                    <p className="text-slate-500">{isEditing ? selectedUser?.email : 'Initialize a new secure profile'}</p>
+                    <h2 className="text-2xl font-bold text-white mb-2">
+                      {isEditing ? "Modify Personnel" : "Enroll New Personnel"}
+                    </h2>
+                    <p className="text-slate-500">
+                      {isEditing
+                        ? selectedUser?.email
+                        : "Initialize a new secure profile"}
+                    </p>
                   </div>
 
-                  <form onSubmit={isEditing ? handleSaveEdit : handleRegister} className="space-y-8">
-                    {errorMsg && <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm text-center">{errorMsg}</div>}
+                  <form
+                    onSubmit={isEditing ? handleSaveEdit : handleRegister}
+                    className="space-y-8"
+                  >
+                    {errorMsg && (
+                      <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm text-center">
+                        {errorMsg}
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {!isEditing && (
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email</label>
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
+                            Email
+                          </label>
                           <div className="relative">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
-                            <input name="email" type="email" required placeholder="user@corp.com" value={regForm.email} onChange={handleRegChange} className="glass-input pl-11" />
+                            <Mail
+                              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
+                              size={18}
+                            />
+                            <input
+                              name="email"
+                              type="email"
+                              required
+                              placeholder="user@corp.com"
+                              value={regForm.email}
+                              onChange={handleRegChange}
+                              className="glass-input pl-11"
+                            />
                           </div>
                         </div>
                       )}
 
                       {isEditing && (
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Unique ID</label>
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
+                            Unique ID
+                          </label>
                           <div className="relative">
-                            <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
-                            <input value={selectedUser?.id} readOnly className="glass-input pl-11 !text-slate-500 cursor-not-allowed border-none shadow-none" />
+                            <Hash
+                              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
+                              size={18}
+                            />
+                            <input
+                              value={selectedUser?.id}
+                              readOnly
+                              className="glass-input pl-11 !text-slate-500 cursor-not-allowed border-none shadow-none"
+                            />
                           </div>
                         </div>
                       )}
 
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">{isEditing ? 'New Password (Optional)' : 'Security Password'}</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
+                          {isEditing
+                            ? "New Password (Optional)"
+                            : "Security Password"}
+                        </label>
                         <div className="relative">
-                          <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
+                          <KeyRound
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
+                            size={18}
+                          />
                           <input
                             name={isEditing ? "new_password" : "password"}
                             type="password"
                             required={!isEditing}
                             placeholder="••••••••"
-                            value={isEditing ? editForm.new_password : regForm.password}
-                            onChange={isEditing ? handleEditChange : handleRegChange}
+                            value={
+                              isEditing
+                                ? editForm.new_password
+                                : regForm.password
+                            }
+                            onChange={
+                              isEditing ? handleEditChange : handleRegChange
+                            }
                             className="glass-input pl-11"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Mobile Contact</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
+                          Mobile Contact
+                        </label>
                         <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
+                          <Phone
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
+                            size={18}
+                          />
                           <input
                             name="phone_number"
                             type="tel"
                             placeholder="+100 000 000"
-                            value={isEditing ? editForm.phone_number : regForm.phone_number}
-                            onChange={isEditing ? handleEditChange : handleRegChange}
+                            value={
+                              isEditing
+                                ? editForm.phone_number
+                                : regForm.phone_number
+                            }
+                            onChange={
+                              isEditing ? handleEditChange : handleRegChange
+                            }
                             className="glass-input pl-11"
                           />
                         </div>
@@ -296,12 +421,23 @@ const Admin: React.FC = () => {
                     </div>
 
                     <div className="pt-8 border-t border-white/5 flex gap-4">
-                      <button type="button" onClick={handleBack} className="flex-1 bg-white/5 text-slate-300 py-4 rounded-2xl font-bold tracking-wide hover:bg-white/10 transition-all border border-white/10">
+                      <button
+                        type="button"
+                        onClick={handleBack}
+                        className="flex-1 bg-white/5 text-slate-300 py-4 rounded-2xl font-bold tracking-wide hover:bg-white/10 transition-all border border-white/10"
+                      >
                         Cancel Operation
                       </button>
-                      <button type="submit" className="flex-1 bg-[#6366f1] text-white py-4 rounded-2xl font-bold tracking-wide hover:bg-[#4f46e5] shadow-lg shadow-[#6366f1]/20 transition-all flex items-center justify-center gap-2">
-                        {isEditing ? <Save size={18} /> : <UserPlus size={18} />}
-                        {isEditing ? 'Commit Changes' : 'Execute Enrollment'}
+                      <button
+                        type="submit"
+                        className="flex-1 bg-[#6366f1] text-white py-4 rounded-2xl font-bold tracking-wide hover:bg-[#4f46e5] shadow-lg shadow-[#6366f1]/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        {isEditing ? (
+                          <Save size={18} />
+                        ) : (
+                          <UserPlus size={18} />
+                        )}
+                        {isEditing ? "Commit Changes" : "Execute Enrollment"}
                       </button>
                     </div>
                   </form>
@@ -312,8 +448,12 @@ const Admin: React.FC = () => {
             <div className="p-8 md:p-12">
               <div className="flex items-center justify-between mb-12">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-bold text-white">Personnel Database</h2>
-                  <p className="text-slate-500 text-sm">Managing {users.length} active records</p>
+                  <h2 className="text-2xl font-bold text-white">
+                    Personnel Database
+                  </h2>
+                  <p className="text-slate-500 text-sm">
+                    Managing {users.length} active records
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsRegistering(true)}
@@ -327,7 +467,9 @@ const Admin: React.FC = () => {
               {isLoading ? (
                 <div className="py-20 text-center space-y-4">
                   <div className="w-10 h-10 border-4 border-[#6366f1]/30 border-t-[#6366f1] rounded-full animate-spin mx-auto"></div>
-                  <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Querying User Data</p>
+                  <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
+                    Querying User Data
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto rounded-3xl border border-white/5 bg-black/20">
@@ -341,24 +483,40 @@ const Admin: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map(user => (
-                        <tr key={user.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                      {users.map((user) => (
+                        <tr
+                          key={user.id}
+                          className="border-b border-white/5 hover:bg-white/5 transition-colors group"
+                        >
                           <td className="px-8 py-6">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-2xl overflow-hidden bg-slate-800 border-2 border-white/5">
                                 <img
-                                  src={user.image ? `data:image/png;base64,${user.image}` : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=40&h=40"}
-                                  alt="" className="w-full h-full object-cover"
+                                  src={
+                                    user.image
+                                      ? `data:image/png;base64,${user.image}`
+                                      : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=40&h=40"
+                                  }
+                                  alt=""
+                                  className="w-full h-full object-cover"
                                 />
                               </div>
-                              <span className="text-white font-semibold">{user.email}</span>
+                              <span className="text-white font-semibold">
+                                {user.email}
+                              </span>
                             </div>
                           </td>
                           <td className="px-8 py-6">
-                            <span className="text-slate-500 font-mono text-xs bg-white/5 px-2 py-1 rounded-lg border border-white/5">{user.id}</span>
+                            <span className="text-slate-500 font-mono text-xs bg-white/5 px-2 py-1 rounded-lg border border-white/5">
+                              {user.id}
+                            </span>
                           </td>
                           <td className="px-8 py-6 text-slate-400 font-medium">
-                            {user.phone_number || <span className="text-slate-700 italic">None Registered</span>}
+                            {user.phone_number || (
+                              <span className="text-slate-700 italic">
+                                None Registered
+                              </span>
+                            )}
                           </td>
                           <td className="px-8 py-6 text-right">
                             <button
@@ -398,8 +556,12 @@ const Admin: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-2xl font-bold text-white mb-2">Live Update Detected</h3>
-                <p className="text-slate-400">Synchronized activity from external source detected</p>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  Live Update Detected
+                </h3>
+                <p className="text-slate-400">
+                  Synchronized activity from external source detected
+                </p>
               </div>
 
               <div className="w-full bg-[#0f172a] rounded-24 border border-white/10 p-6 text-left space-y-4">
@@ -408,11 +570,18 @@ const Admin: React.FC = () => {
                     <Info size={18} className="text-[#6366f1]" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Modified Identity</p>
-                    <p className="text-white font-mono text-sm">{activeNotification.userId}</p>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                      Modified Identity
+                    </p>
+                    <p className="text-white font-mono text-sm">
+                      {activeNotification.userId}
+                    </p>
                   </div>
                 </div>
-                <p className="text-slate-500 text-sm italic py-2 border-t border-white/5">System records have been automatically refreshed to maintain data integrity.</p>
+                <p className="text-slate-500 text-sm italic py-2 border-t border-white/5">
+                  System records have been automatically refreshed to maintain
+                  data integrity.
+                </p>
               </div>
 
               <button
