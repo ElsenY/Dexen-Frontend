@@ -13,9 +13,10 @@ Follow these steps to get the application running on your local machine:
     ```
 
 2.  **Configure Environment Variables**
-    Create a `.env` file in the root directory and add your backend API URL:
+    Create a `.env` file in the root directory and fill in based on your backend port:
     ```env
-    REACT_APP_API_URL=http://localhost:3000
+    REACT_APP_API_URL=http://localhost:5000
+    PORT=3000
     ```
 
 3.  **Launch the Application**
